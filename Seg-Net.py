@@ -138,8 +138,8 @@ pool5 = tf.layers.max_pooling2d(inputs=conv5bisbis, pool_size=[2, 2], strides=2)
 
 #DECODER################################################################################################################
 # upsampling layer 1 :
-upsample1 = tf.image.resize_images(pool5, size=(72, 72), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-
+#upsample1 = tf.resized_image(pool5, size=(72, 72), method=tf.image.ResizeMethod.NEAREST_NEIGHBOR) #note: if you use resize, it will distore your image
+upsample1 = tf.reshape(pool5, shape=(72, 72))
 # Deconvolutional layer 1 :
 deconv1 = tf.layers.conv2d_transpose(inputs=upsample1, filters=512, kernel_size=(3, 3), padding='same',
                                      activation=tf.nn.relu)
@@ -210,7 +210,8 @@ with tf.variable_scope('train'):
     # Define accuracy :
     with tf.variable_scope("Accuracy"):
         # correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(Y_train, 1), name='correct_pred')  #note
-        accuracy = tf.reduce_mean(tf.cast(tf.equal(logits, y_ph, name='correct_pred'), tf.int8))
+        # accuracy = tf.reduce_mean(tf.cast(tf.equal(logits, y_ph, name='correct_pred'), tf.int8)) #note: if you do reduce_mean, you will have one value, not an image
+        accuracy = tf.losses.mean_square_error(labels=y_ph, predictions=logits)
         # accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name='accuracy')  #note
         tf.summary.scalar('accuracy', accuracy)
 
@@ -227,13 +228,13 @@ with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
     sess.run(init)
     train_writer = tf.summary.FileWriter(logs_path, sess.graph)
     for epoch in range(EPOCHS):
-        # shuffle
-        for i in range(num_batch):  #numbatch * batchsize = total number of img
-        #X_train, Y_train = f1(epoch)
-    #Calculate and display the loss and accuracy
-               summary, acc, _, curr_loss = sess.run([merged, accuracy, optimizer, loss], feed_dict={x_ph: X_train[i*batch_size: (i+1)*batch_size], y_ph: Y_train[i*batch_size: (i+1)*batch_size]})   #[i*batch_size: (i+1)*batch_size]......[i*batch_size: (i+1)*batch_size]
-               train_writer.add_summary(summary, epoch)
-               print('EPOCH = {}, STEO = {}, LOSS = {}, ACCURACY = {}'.format(epoch, i, curr_loss, acc))  #LOSS = {:0.4f}  # the underscore in the beginning is for ignoringg train_step
-               #saver = tf.train.saver()
-               #path = saver.save(sess, SAVE_PATH + '/' + MODEL_NAME + '.ckpt')
-               #print("saved at {}".format(path))
+        #todo: shuffle before epoch
+        for i in range(num_batch):  #todo: please define your number of batch before
+            #X_train, Y_train = f1(epoch)
+            #Calculate and display the loss and accuracy
+            summary, acc, _, curr_loss = sess.run([merged, accuracy, optimizer, loss], feed_dict={x_ph: X_train[i*batch_size: (i+1)*batch_size], y_ph: Y_train[i*batch_size: (i+1)*batch_size]})   #[i*batch_size: (i+1)*batch_size]......[i*batch_size: (i+1)*batch_size]
+            train_writer.add_summary(summary, epoch)
+            print('EPOCH = {}, STEO = {}, LOSS = {}, ACCURACY = {}'.format(epoch, i, curr_loss, acc))  #LOSS = {:0.4f}  # the underscore in the beginning is for ignoringg train_step
+            #saver = tf.train.saver()
+            #path = saver.save(sess, SAVE_PATH + '/' + MODEL_NAME + '.ckpt')
+            #print("saved at {}".format(path))
