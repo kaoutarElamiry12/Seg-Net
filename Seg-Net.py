@@ -86,7 +86,7 @@ Y_train = np.reshape(Y, newshape=(-1, 72, 72, 1))  # [: , 200:300, 200:300, :]
 # Create graph and Define placeholder for input :
 with tf.variable_scope('Input'):
     x_ph = tf.placeholder("float32", [None, 72, 72, 1])
-tf.summary.image('input_img', tf.reshape(X_train, (-1, 72, 72, 1)), max_outputs=5)
+    tf.summary.image('input_img', tf.reshape(X_train, (-1, 72, 72, 1)), max_outputs=5)
 # graph , and define placeholder for output :
 with tf.variable_scope('Output'):
     y_ph = tf.placeholder("float32", [None, 72, 72, 1])
@@ -232,6 +232,7 @@ with tf.Session(config=tf.ConfigProto(device_count={'GPU': 0})) as sess:
         for i in range(num_batch):  #todo: please define your number of batch before
             #X_train, Y_train = f1(epoch)
             #Calculate and display the loss and accuracy
+            #todo: define your batch_size
             summary, acc, _, curr_loss = sess.run([merged, accuracy, optimizer, loss], feed_dict={x_ph: X_train[i*batch_size: (i+1)*batch_size], y_ph: Y_train[i*batch_size: (i+1)*batch_size]})   #[i*batch_size: (i+1)*batch_size]......[i*batch_size: (i+1)*batch_size]
             train_writer.add_summary(summary, epoch)
             print('EPOCH = {}, STEO = {}, LOSS = {}, ACCURACY = {}'.format(epoch, i, curr_loss, acc))  #LOSS = {:0.4f}  # the underscore in the beginning is for ignoringg train_step
